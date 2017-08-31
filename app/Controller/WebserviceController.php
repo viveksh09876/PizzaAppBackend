@@ -1632,11 +1632,9 @@ function sendCareerInfo(){
 								foreach($fpm['option'] as $fop) {
 									
 									if($fop['plu_code'] == $mo['Option']['plu_code']) {
-										//echo '<pre>'; print_r($fop); 
-										
-										
-										if ($fop['plu_code'] == 'I101' || $fop['plu_code'] == 'I100' || $fop['plu_code'] == '91') {
-											
+																				
+										if ($mo['Option']['plu_code'] == 'I101' || $mo['Option']['plu_code'] == 'I100' || $mo['Option']['plu_code'] == '91') {
+											//echo $fop['plu_code'].'<>';
 											if ($fop['send_code'] == 1 && $fop['is_checked'] == true) {
 												$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['is_checked'] = true;
 											} else {
@@ -1677,7 +1675,11 @@ function sendCareerInfo(){
 										}
 									
 									} else {
-										//$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['is_checked'] = false;
+										
+										if($mo['Option']['plu_code'] == 'I101' || $mo['Option']['plu_code'] == 'I100' || $mo['Option']['plu_code'] == '91') {
+											$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['is_checked'] = false;
+										}
+										
 									}
 									
 								}	
