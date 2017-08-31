@@ -7,7 +7,7 @@ class WebserviceController extends AppController {
     function beforeFilter(){
         parent::beforeFilter();
 		//Configure::write('debug', 2);
-        $this->Auth->allow(array('get_countries','get_categories','getPageInfo','getip','sendApplyInfo','get_languages','get_slides','get_sub_categories','get_products','get_modifiers','get_options','get_suboptions','getImagePath','get_all_categories_data','getItemData','placeOrder','getStoreList','getStoresFromPostalCode', 'getStoresFromLatLong','getStoreDetails','login','getTwitterFeeds','getInstagramPost','getCountryStores','saveFavItem','getCitiesSuggestion','getFBFeed','getIGFeed','getPrefrences','signUp', 'getFav', 'getFavItemData','applyCoupon','getFavOrderData','getProfile','sendCateringInfo','sendContactInfo','sendCareerInfo','getOrderHistory','updateProfile','getProductNameByPlu','getModifierName','updatePrefrence','addAddress','deleteAddress','editAddress','setAsDefault','getUserPrefreces','getAreaSuggestion','testUrl', 'getStoreDetailsByStoreId','forgot_password','reset_password','getReOrderData'));
+        $this->Auth->allow(array('get_countries','get_categories','getPageInfo','getip','sendApplyInfo','get_languages','get_slides','get_sub_categories','get_products','get_modifiers','get_options','get_suboptions','getImagePath','get_all_categories_data','getItemData','placeOrder','getStoreList','getStoresFromPostalCode', 'getStoresFromLatLong','getStoreDetails','login','getTwitterFeeds','getInstagramPost','getCountryStores','saveFavItem','getCitiesSuggestion','getFBFeed','getIGFeed','getPrefrences','signUp', 'getFav', 'getFavItemData','applyCoupon','getFavOrderData','getProfile','sendCateringInfo','sendContactInfo','sendCareerInfo','getOrderHistory','updateProfile','getProductNameByPlu','getModifierName','updatePrefrence','addAddress','deleteAddress','editAddress','setAsDefault','getUserPrefreces','getAreaSuggestion','testUrl', 'getStoreDetailsByStoreId','forgot_password','reset_password','getReOrderData','sendAckEmail','uploadAttachment'));
     }
 
 	public function get_countries(){
@@ -1281,6 +1281,7 @@ class WebserviceController extends AppController {
     }
 
     if($this->sendPhpEmail(CATERING_EMAIL,$from,$subject,$content)){
+    	$this->sendAckEmail($email,$username);
 		echo json_encode(array('show'=>true, 'isSuccess'=>true, 'message'=>'Thank you for your enquiry about your event - we’ll be in touch really soon to talk about how we can help!'));
 	}else{
 		echo json_encode(array('show'=>true, 'isSuccess'=>false, 'message'=>'Sorry ! mail not send, please try again.'));
@@ -1322,6 +1323,7 @@ class WebserviceController extends AppController {
     }
   
     if($this->sendPhpEmail(CONTACT_EMAIL,$from,$subject,$content)){
+    	$this->sendAckEmail($email,$name);
 		echo json_encode(array('show'=>true, 'isSuccess'=>true, 'message'=>'Thank You ! information has been sent successfully will contact you soon.'));
 	}else{
 		echo json_encode(array('show'=>true, 'isSuccess'=>false, 'message'=>'Sorry ! mail not send, please try again.'));
@@ -1361,6 +1363,7 @@ class WebserviceController extends AppController {
         $content=str_replace($arrFind, $arrReplace,$template['EmailTemplate']['email_body']);
     }
     if($this->sendPhpEmail(ENQUIRY_EMAIL,$from,$subject,$content)){
+    	$this->sendAckEmail($email,$name);
 			echo json_encode(array('show'=>true, 'isSuccess'=>true, 'message'=>'Thank You ! you information has been sent successfully will contact you soon.'));
 		}else{
     	echo json_encode(array('show'=>true, 'isSuccess'=>false, 'message'=>'Sorry ! mail not send, please try again.'));
@@ -1402,6 +1405,7 @@ function sendCareerInfo(){
     }
 
     if($this->sendPhpEmail(CAREER_EMAIL,$from,$subject,$content)){
+    	$this->sendAckEmail($email,$name);
 			echo json_encode(array('show'=>true, 'isSuccess'=>true, 'message'=>'Thank You ! information has been sent successfully, will contact you soon.'));
 		}else{
     	echo json_encode(array('show'=>true, 'isSuccess'=>false, 'message'=>'Sorry ! mail not send, please try again.'));
@@ -2209,4 +2213,63 @@ function sendCareerInfo(){
 		echo $result;
 	}
 	
+	function sendAckEmail($emailId,$username){
+		$ackTemplate = $this->EmailTemplate->find('first',array(
+	            'conditions' => array(
+	                'template_key'=> 'user_acknowledgement',
+	                'template_status' =>'Active'
+	            )
+	        )
+	    );
+	    if($ackTemplate){ 
+	    	$arrFind=array('{name}');
+	    	$arrReplace=array($username);
+	    	$from=$ackTemplate['EmailTemplate']['from_email'];
+	        $subject=$ackTemplate['EmailTemplate']['email_subject'];
+	        $content=str_replace($arrFind, $arrReplace,$ackTemplate['EmailTemplate']['email_body']);
+	        $this->sendPhpEmail($emailId,$from,$subject,$content);
+	    }
+	}
+
+	function uploadAttachment(){
+		$this->layout = FALSE;
+		$this->autoRender = FALSE;
+		header("Access-Control-Allow-Origin: *");
+		 
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+		  echo json_encode(array('status' => false));
+		  exit;
+		}
+		 
+		$path = 'attachments/';
+		 
+		if (isset($_FILES['file'])) {
+		  $originalName = $_FILES['file']['name'];
+		  $ext = '.'.pathinfo($originalName, PATHINFO_EXTENSION);
+		  $generatedName = md5($_FILES['file']['tmp_name']).$ext;
+		  $filePath = $path.$generatedName;
+		 
+		  if (!is_writable($path)) {
+		    echo json_encode(array(
+		      'status' => false,
+		      'msg'    => 'Destination directory not writable.'
+		    ));
+		    exit;
+		  }
+		 
+		  if (move_uploaded_file($_FILES['file']['tmp_name'], $filePath)) {
+		    echo json_encode(array(
+		      'status'        => true,
+		      'originalName'  => $originalName,
+		      'generatedName' => $generatedName
+		    ));
+		  }
+		}
+		else {
+		  echo json_encode(
+		    array('status' => false, 'msg' => 'No file uploaded.')
+		  );
+		  exit;
+		}
+	}
 }
