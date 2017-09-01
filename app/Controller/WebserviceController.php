@@ -6,7 +6,7 @@ class WebserviceController extends AppController {
 
     function beforeFilter(){
         parent::beforeFilter();
-		//Configure::write('debug', 2);
+		// Configure::write('debug', 2);
         $this->Auth->allow(array('get_countries','get_categories','getPageInfo','getip','sendApplyInfo','get_languages','get_slides','get_sub_categories','get_products','get_modifiers','get_options','get_suboptions','getImagePath','get_all_categories_data','getItemData','placeOrder','getStoreList','getStoresFromPostalCode', 'getStoresFromLatLong','getStoreDetails','login','getTwitterFeeds','getInstagramPost','getCountryStores','saveFavItem','getCitiesSuggestion','getFBFeed','getIGFeed','getPrefrences','signUp', 'getFav', 'getFavItemData','applyCoupon','getFavOrderData','getProfile','sendCateringInfo','sendContactInfo','sendCareerInfo','getOrderHistory','updateProfile','getProductNameByPlu','getModifierName','updatePrefrence','addAddress','deleteAddress','editAddress','setAsDefault','getUserPrefreces','getAreaSuggestion','testUrl', 'getStoreDetailsByStoreId','forgot_password','reset_password','getReOrderData','sendAckEmail','uploadAttachment'));
     }
 
@@ -1896,6 +1896,7 @@ function sendCareerInfo(){
 	public function addAddress(){
 		$this->layout = 'false';
 		$this->autoRender = false;
+		// Configure::write('debug', 2);
 		$addressNo = '';
 		$userData = $this->request->input ( 'json_decode', true) ;	
 
@@ -1903,14 +1904,14 @@ function sendCareerInfo(){
 		$resp = $this->curlGetRequest(APIURL.'/index.php/getProfile/'.$userData['id']);
 		$profileData = json_decode($resp, true);
 		
-		if($profileData['Address1']=='""' || empty($profileData['Address1'])){
+		if($profileData['Address1']=='null' || $profileData['Address1']=='""' || empty($profileData['Address1'])){
 			$addressNo = 'address1';
-		}else if($profileData['Address2']=='""' || empty($profileData['Address2'])){
+		}else if($profileData['Address2']=='null' || $profileData['Address2']=='""' || empty($profileData['Address2'])){
 			$addressNo = 'address2';
-		}else if($profileData['Address3']=='""' || empty($profileData['Address3'])){
+		}else if($profileData['Address3']=='null' || $profileData['Address3']=='""' || empty($profileData['Address3'])){
 			$addressNo = 'address3';
 		}
-		
+
 		$upatedData = array(
 			'form'=>4,
 			$addressNo=>$userData
