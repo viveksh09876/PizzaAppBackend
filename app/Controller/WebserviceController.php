@@ -502,13 +502,23 @@ class WebserviceController extends AppController {
 									foreach($plu_mod as $pl_m) {
 										if($pl_m['PLU'] == $opt['plu_code']) {
 											if(isset($pl_m['Price'])) {
-												$price = $pl_m['Price'];
+												
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = $pl_m['Price'];	
+												}
+												
 											}else if(isset($pl_m['PriceSm'])){
-												$price = array(
-													'small' => $pl_m['PriceSm'],
-													'medium' => $pl_m['PriceMed'],
-													'large' => $pl_m['PriceLg']
-												);
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = array(
+														'small' => $pl_m['PriceSm'],
+														'medium' => $pl_m['PriceMed'],
+														'large' => $pl_m['PriceLg']
+													);
+												}												
 											}	
 											$includedArr[$key]['option'][$i]['price'] = $price;
 											$includedArr[$key]['option'][$i]['send_code'] = '';
@@ -677,13 +687,21 @@ class WebserviceController extends AppController {
 										if($pl_m['PLU'] == $mo['Option']['plu_code']) {
 										
 											if(isset($pl_m['Price'])) {
-												$price = $pl_m['Price'];
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = $pl_m['Price'];
+												}
 											}else if(isset($pl_m['PriceSm'])){
-												$price = array(
-													'small' => $pl_m['PriceSm'],
-													'medium' => $pl_m['PriceMed'],
-													'large' => $pl_m['PriceLg']
-												);
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = array(
+														'small' => $pl_m['PriceSm'],
+														'medium' => $pl_m['PriceMed'],
+														'large' => $pl_m['PriceLg']
+													);
+												}
 											}	
 											$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['price'] = $price;
 											$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['is_topping'] = true;
