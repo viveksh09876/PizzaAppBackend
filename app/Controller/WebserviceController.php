@@ -7,7 +7,7 @@ class WebserviceController extends AppController {
     function beforeFilter(){
         parent::beforeFilter();
 		// Configure::write('debug', 2);
-        $this->Auth->allow(array('get_countries','get_categories','getPageInfo','getip','sendApplyInfo','get_languages','get_slides','get_sub_categories','get_products','get_modifiers','get_options','get_suboptions','getImagePath','get_all_categories_data','getItemData','placeOrder','getStoreList','getStoresFromPostalCode', 'getStoresFromLatLong','getStoreDetails','login','getTwitterFeeds','getInstagramPost','getCountryStores','saveFavItem','getCitiesSuggestion','getFBFeed','getIGFeed','getPrefrences','signUp', 'getFav', 'getFavItemData','applyCoupon','getFavOrderData','getProfile','sendCateringInfo','sendContactInfo','sendCareerInfo','getOrderHistory','updateProfile','getProductNameByPlu','getModifierName','updatePrefrence','addAddress','deleteAddress','editAddress','setAsDefault','getUserPrefreces','getAreaSuggestion','testUrl', 'getStoreDetailsByStoreId','forgot_password','reset_password','getReOrderData','sendAckEmail','uploadAttachment'));
+        $this->Auth->allow(array('get_countries','get_categories','getPageInfo','getip','sendApplyInfo','get_languages','get_slides','get_slides_app','get_sub_categories','get_products','get_modifiers','get_options','get_suboptions','getImagePath','get_all_categories_data','get_all_categories_data_app','getItemData','placeOrder','getStoreList','getStoresFromPostalCode', 'getStoresFromLatLong','getStoreDetails','login','getTwitterFeeds','getInstagramPost','getCountryStores','saveFavItem','getCitiesSuggestion','getCitiesSuggestionApp','getFBFeed','getIGFeed','getPrefrences','signUp', 'getFav', 'getFavItemData','applyCoupon','getFavOrderData','getProfile','sendCateringInfo','sendContactInfo','sendCareerInfo','getOrderHistory','updateProfile','getProductNameByPlu','getModifierName','updatePrefrence','addAddress','deleteAddress','editAddress','setAsDefault','getUserPrefreces','getAreaSuggestion','testUrl', 'getStoreDetailsByStoreId','forgot_password','reset_password','getReOrderData','sendAckEmail','uploadAttachment', 'sendPaymentData'));
     }
 
 	public function get_countries(){
@@ -82,6 +82,28 @@ class WebserviceController extends AppController {
 		
 		
         echo json_encode($slides); die;
+		
+    }
+	
+	public function get_slides_app($lang_id = 1){
+        $this->layout = FALSE;
+        $this->autoRender = FALSE;
+		
+		$slides = $this->Slide->find('all', array('conditions' => array(
+								'lang_id' => $lang_id,
+								'status' => 'Active'
+					)));
+		
+		$slideList = array();
+		foreach ($slides as $key => $value) {
+			$data = array();
+			foreach ($value['Slide'] as $k => $v) {
+				$data['Slide'][$k] = stripcslashes($v);
+			}
+			$slideList[] =  $data;
+		}
+		
+        echo json_encode(array('slideList'=>$slideList)); die;
 		
     }
 
@@ -340,6 +362,176 @@ class WebserviceController extends AppController {
 		//echo '<pre>'; print_r($cats); die;
         echo json_encode($cats); die;
     }
+
+	public function get_all_categories_data_app($storeId = 1, $menuCountry = 'UAE'){
+		
+		//Configure::write('debug', 2);
+        $this->layout = FALSE;
+        $this->autoRender = FALSE;
+		$this->Category->recursive = 2;
+		
+		$this->Category->bindModel(array('hasMany'=>array(
+								'Product' => array(
+										'conditions' => array('Product.status' => 1, 'Product.lang_id !=' => 0),
+										'fields' => array(
+														'Product.id', 'Product.lang_id','Product.category_id',
+														'Product.sub_category_id', 'Product.short_description', 'Product.plu_code',
+														'Product.title', 'Product.price_title', 'Product.slug','Product.price','Product.image',
+														'Product.thumb_image','Product.sort_order'
+														
+												),
+										'order' => array('Product.sort_order' => 'asc')		
+								)
+						)));
+						
+		$this->Product->bindModel(array(
+									'belongsTo' => array(
+										'SubCategory' => array(
+											'ClassName' => 'SubCategory',
+											'foreignKey' => 'sub_category_id',
+											'conditions' => array('SubCategory.status' => 1),
+											'fields' => array(
+													'SubCategory.id','SubCategory.lang_id','SubCategory.store_id','SubCategory.cat_id','SubCategory.name','SubCategory.slug','SubCategory.short_description','SubCategory.sort_order','SubCategory.image','SubCategory.status'
+												),
+											'order' => array('SubCategory.sort_order' => 'asc')	
+										)
+									),
+									'hasMany' => array(
+										'ProductModifier' => array(
+											'className' => 'ProductModifier',
+											'foreignKey' => 'product_id',
+											'fields' => array('ProductModifier.id')
+										)
+									)
+								));
+        
+		
+									
+		$data = $this->Category->find('all', array('conditions' => array(
+														'Category.status' => 1,
+														'Category.lang_id' => $storeId)
+												));
+		
+		//echo '<pre>'; print_r($data); die;
+		//$plu_json = $this->curlGetRequest('https://nkdpizza.com/beta/pos/index.php/menu/'.$menuCountry);
+		
+		$plu_json = $this->curlGetRequest(APIURL.'/index.php/menu/UAE');
+		$plu_json = json_decode($plu_json, true);
+		$plu_json = $plu_json['item'];
+		$resp = array();
+		$all_categories = $cats = $subCats = array();
+		
+		if(!empty($data)){
+			$i = 0;
+			foreach($data as $dat) {
+				
+				if(!in_array($dat['Category']['name'], $all_categories)) {
+					$cats[$i]['id'] = $dat['Category']['id'];
+					$cats[$i]['name'] = $dat['Category']['name'];
+					$cats[$i]['subCats'] = null;
+					$cats[$i]['products'] = array();
+					$cats[$i]['subCatsName'] = array();
+					$all_categories[] = $dat['Category']['name'];
+				}
+				
+				
+				if(!empty($dat['Product'])) {
+					$j = 0; $count = array();
+					$totSubIndex = 0;
+					foreach($dat['Product'] as $prod) {
+						
+						$prod['is_price_mapped'] = 0;
+						$prod['mod_count'] = count($prod['ProductModifier']);
+						unset($prod['ProductModifier']);
+						
+						//map price of product using plu code
+						if(!empty($plu_json)) {
+							foreach($plu_json as $pluData) {
+								//echo '<pre>'; print_r($pluData); die;
+								foreach($pluData as $pdat) {
+									//echo '<pre>'; print_r($pdat); 
+									if($dat['Category']['id'] == '1') {
+										
+										if($prod['plu_code'] == 999999) {
+											$prod['is_price_mapped'] = 1;
+											$prod['price'] = $prod['price_title'];	
+										}else{
+											
+											if(is_array($pdat)) {
+												foreach($pdat as $pz) {
+													if(isset($pz['PLU'])) {
+														if($prod['plu_code'] == $pz['PLU']) {
+															$prod['is_price_mapped'] = 1;
+															$prod['price'] = array(
+																'small' => $pz['PriceSm'],
+																'medium' => $pz['PriceMed'],
+																'large' => $pz['PriceLg']
+															);
+														}	
+													}
+												}
+											}
+											
+										}
+										//echo '<pre>'; print_r($prod); die;
+										
+									}else{
+										if(isset($pdat['PLU'])) {
+											if($prod['plu_code'] == $pdat['PLU']) {
+												$prod['is_price_mapped'] = 1;
+												$prod['price'] = $pdat['Price']. ' DHS';
+											}	
+										}
+									}									
+								}								
+							}
+						}
+						
+						//echo '<pre>'; print_r($prod); die;
+						if(!empty($prod['sub_category_id'])){
+							
+							if(!in_array($prod['SubCategory']['name'], $cats[$i]['subCatsName'])) {
+								$cats[$i]['subCatsName'][] = $prod['SubCategory']['name'];
+								$cats[$i]['subCatsPrice'][] = $prod['SubCategory']['short_description'];
+							}
+							
+							$subIndex = array_search($prod['SubCategory']['name'], $cats[$i]['subCatsName']);
+							$tname = 'subCat_'.$subIndex;
+							
+							
+							if(!isset($count[$prod['SubCategory']['name']])) {
+								$count[$prod['SubCategory']['name']] = 0;
+							}
+							
+							$sName = $prod['SubCategory'];
+							unset($prod['SubCategory']);
+							unset($prod['created']);
+							unset($prod['modified']);
+							
+							//$tName = preg_replace("![^a-z0-9]+!i", "-", $sName['name']);
+							
+							$cats[$i]['subCats'][$tname][$count[$sName['name']]]['name'] = $sName['name'];
+							$cats[$i]['subCats'][$tname][$count[$sName['name']]]['products'][] = $prod;
+							
+							$count[$sName['name']] +=1;
+						}else{
+							$cats[$i]['products'][] = $prod;
+						}
+						
+						$j++;
+					}
+				}
+				
+				$i++;			
+			}
+		}
+			
+		
+		//die;
+		//echo '<pre>'; print_r($cats); die;
+        echo json_encode(array('itemList'=>$cats)); die;
+    }
+
 	
 	
 	public function getItemData($slug = '', $menuCountry = 'UAE') {
@@ -502,13 +694,23 @@ class WebserviceController extends AppController {
 									foreach($plu_mod as $pl_m) {
 										if($pl_m['PLU'] == $opt['plu_code']) {
 											if(isset($pl_m['Price'])) {
-												$price = $pl_m['Price'];
+												
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = $pl_m['Price'];	
+												}
+												
 											}else if(isset($pl_m['PriceSm'])){
-												$price = array(
-													'small' => $pl_m['PriceSm'],
-													'medium' => $pl_m['PriceMed'],
-													'large' => $pl_m['PriceLg']
-												);
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = array(
+														'small' => $pl_m['PriceSm'],
+														'medium' => $pl_m['PriceMed'],
+														'large' => $pl_m['PriceLg']
+													);
+												}												
 											}	
 											$includedArr[$key]['option'][$i]['price'] = $price;
 											$includedArr[$key]['option'][$i]['send_code'] = '';
@@ -677,13 +879,21 @@ class WebserviceController extends AppController {
 										if($pl_m['PLU'] == $mo['Option']['plu_code']) {
 										
 											if(isset($pl_m['Price'])) {
-												$price = $pl_m['Price'];
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = $pl_m['Price'];
+												}
 											}else if(isset($pl_m['PriceSm'])){
-												$price = array(
-													'small' => $pl_m['PriceSm'],
-													'medium' => $pl_m['PriceMed'],
-													'large' => $pl_m['PriceLg']
-												);
+												if (isset($pl_m['PriceSalad']) && intval($pl_m['PriceSalad']) > 0) {
+													$price = $pl_m['PriceSalad'];
+												} else {
+													$price = array(
+														'small' => $pl_m['PriceSm'],
+														'medium' => $pl_m['PriceMed'],
+														'large' => $pl_m['PriceLg']
+													);
+												}
 											}	
 											$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['price'] = $price;
 											$item['ProductModifier'][$i]['Modifier']['ModifierOption'][$j]['Option']['is_topping'] = true;
@@ -1191,11 +1401,30 @@ class WebserviceController extends AppController {
 		
 		if(!empty($searchKey)) {
 			$url = "http://gd.geobytes.com/AutoCompleteCity?filter=".$countryCode."&q=".$searchKey;
-			$result     = $this->curlGetRequest($url);
+			$result = $this->curlGetRequest($url);
 		}
 			
 		echo $result; die;
 		
+	}
+	
+	public function getCitiesSuggestionApp($searchKey, $countryCode = null) {
+		$this->autoRender = false;
+		$searchCity =  array('Motor City','Dubai Marina', 'Business Bay');
+		$result = array();
+		if(!empty($searchKey)) {
+			$url = "http://gd.geobytes.com/AutoCompleteCity?filter=".$countryCode."&q=".$searchKey;
+			$result = $this->curlGetRequest($url);
+		}
+
+		if($result == '[""]'){
+			foreach ($searchCity as $key => $value) {
+				if(stristr(strtolower($value),$searchKey)) {
+					$result = '["'.$value.', DU, United Arab Emirates"]';
+				}
+			}
+		}
+		echo $result; 
 	}
 	
 	function getFBFeed ($page='nkdpizza'){
@@ -2287,4 +2516,40 @@ function sendCareerInfo(){
 		  exit;
 		}
 	}
+
+
+	public function sendPaymentData() {
+		$card = $this->request->input ( 'json_decode', true);
+		
+		if (!empty($card)) {
+			
+			$details = array(
+				'name' => $card['name'],
+				'customer-id' =>  $card['customerId'],
+				'customer-email' =>  $card['customerEmail'],
+				'postal-code' =>  $card['postalCode'],
+				'amount' =>  $card['amount'],
+				'expiration-month' => $card['expirationMonth'],
+				'expiration-year' => $card['expirationYear'],
+				'card' => $card['card'],
+				'cvc' => $card['cvc'],
+				'3ds' => $card['type']
+			);	
+			
+			//$details = json_encode($details);
+			//echo $details; die;
+			$url = APIURL.'/index.php/Pay';
+			//$url = 'http://35.185.240.172/nkd/index.php/Pay';
+			 
+			//$result     = $this->curlPostRequest($url, $details);
+			$result     = $this->curlGetRequest($url);
+			$response   = json_decode($result);
+			$response = json_encode((array) $response);
+			echo $response; die;
+		}
+		
+		die;
+	}
+
+
 }
