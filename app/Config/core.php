@@ -353,17 +353,17 @@ Cache::config('_cake_model_', array(
 	'duration' => $duration
 ));
 
-define('WEBROOT', FULL_BASE_URL.'/nkdDev/');
-define('ADMIN_WEBROOT', FULL_BASE_URL.'/nkdDev/admin/');
-define('COMPANY_WEBROOT', FULL_BASE_URL.'/nkdDev/company/');
-define('IMG_COMPANY', '/nkdDev/img/company/');
-define('IMG_FRONT', '/nkdDev/img/frontend/');
-define('IMG_ADMIN', '/nkdDev/img/admin/');
-define('IMG', '/nkdDev/img/');
+define('WEBROOT', FULL_BASE_URL.'/dev/');
+define('ADMIN_WEBROOT', FULL_BASE_URL.'/dev/admin/');
+define('COMPANY_WEBROOT', FULL_BASE_URL.'/dev/company/');
+define('IMG_COMPANY', '/dev/img/company/');
+define('IMG_FRONT', '/dev/img/frontend/');
+define('IMG_ADMIN', '/dev/img/admin/');
+define('IMG', '/dev/img/');
 define('SUPPORT_EMAIL', 'narendra.nitm@gmail.com');
-define('CATERING_EMAIL', 'franching@nkdpizza.com');
+define('CATERING_EMAIL', 'catering@nkdpizza.com');
 define('CAREER_EMAIL', 'careers@nkdpizza.com');
 define('CONTACT_EMAIL', 'contact@nkdpizza.com');
-define('ENQUIRY_EMAIL', 'franching@nkdpizza.com');
+define('ENQUIRY_EMAIL', 'franchising@nkdpizza.com');
 define('APIURL', 'https://'.$_SERVER['HTTP_HOST'].'/pos');
-define('EMAIL_DELEVERY', 'smtp');	
+define('EMAIL_DELEVERY', 'smtp');
