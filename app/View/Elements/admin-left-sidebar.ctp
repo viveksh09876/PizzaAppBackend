@@ -1,11 +1,17 @@
+<?php ?>
 <aside class="main-sidebar">
   <section class="sidebar">
     <ul class="sidebar-menu">
       <li class="header"><i class="fa fa-angle-double-right"></i> ADMIN PANEL</li>
-      <li class="<?php echo (strtolower($this->params->controller)=='home')?'active':'';?> treeview">
-        <a href="<?=ADMIN_WEBROOT?>home">
+      <li class="<?php echo (strtolower($this->params->controller)=='reports')?'active':'';?> treeview">
+        <a href="<?=ADMIN_WEBROOT?>reports">
           <i class="fa fa-dashboard"></i> <span>Dashboard</span>
         </a>
+		<ul class="treeview-menu">
+		<li><a href="<?=ADMIN_WEBROOT?>reports"><i class="fa fa-angle-double-right"></i> Summary</a></li>
+         <li><a href="<?php echo $this->Html->url(array("controller" => "reports","action" => "users",25,$this->request->params['pass'][0],$this->request->params['pass'][1]));?>"><i class="fa fa-angle-double-right"></i> Show Registered Users</a></li>
+		<li><a href="<?php echo $this->Html->url(array("controller" => "reports","action" => "guestUsers",25,$this->request->params['pass'][0],$this->request->params['pass'][1]));?>"><i class="fa fa-angle-double-right"></i> Show Guest Users</a></li>
+        </ul>
       </li>
       <!-- <li class="treeview <?php // echo (strtolower($this->params->controller)=='languages')?'active':'';?>">
         <a href="#">
@@ -86,6 +92,17 @@
         <ul class="treeview-menu">
           <li><a href="<?=ADMIN_WEBROOT?>coupons"><i class="fa fa-angle-double-right"></i> List Coupons</a></li>
           <li><a href="<?=ADMIN_WEBROOT?>coupons/add"><i class="fa fa-angle-double-right"></i> Add Coupon</a></li>
+        </ul>
+      </li>
+       <li class="treeview <?php echo (strtolower($this->params->controller)=='coupons')?'active':'';?>">
+        <a href="#">
+          <i class="fa fa-hand-o-right"></i>
+          <span>Manage Deals</span>
+          <i class="fa fa-angle-left pull-right"></i>
+        </a>
+        <ul class="treeview-menu">
+          <li><a href="<?=ADMIN_WEBROOT?>deals"><i class="fa fa-angle-double-right"></i> List Deals</a></li>
+          <li><a href="<?=ADMIN_WEBROOT?>deals/add"><i class="fa fa-angle-double-right"></i> Add Deal</a></li>
         </ul>
       </li>
     </ul>

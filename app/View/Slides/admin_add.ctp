@@ -33,7 +33,7 @@
        </div>
      </div>
      <div class="form-group col-sm-6 fl-right">
-        <label class="col-sm-3 control-label" for="inputPassword3">Foreground Image</label>
+        <label class="col-sm-3 control-label" for="inputPassword3">Mobile Image</label>
         <div class="col-sm-9">
           <?php echo $this->Form->file('text_image', array('label'=>false)); ?>
           <?php if(!empty($this->request->data['Slide']['id'])&&!empty($this->request->data['Slide']['text_image'])){ ?>
@@ -67,12 +67,12 @@
        <?php echo $this->Form->input('coupon_code', array('label'=>false,'class'=>'form-control','title'=>'Please enter coupon code.')); ?>
      </div>
     </div>
-   <!--  <div class="form-group col-sm-6 clear">
+   <div class="form-group col-sm-6">
       <label class="col-sm-3 control-label" for="inputPassword3">Link </label>
       <div class="col-sm-9">
-       <?php // echo $this->Form->input('slide_link', array('label'=>false,'class'=>'form-control','after'=>'(i.e http://www.demo.com)')); ?>
+       <?php  echo $this->Form->input('slide_link', array('label'=>false,'class'=>'form-control','after'=>'(i.e http://www.demo.com)')); ?>
      </div>
-   </div> -->
+   </div>
    <div class="form-group col-sm-6">
       <label class="col-sm-3 control-label" for="inputPassword3">Status</label>
       <div class="col-sm-9">

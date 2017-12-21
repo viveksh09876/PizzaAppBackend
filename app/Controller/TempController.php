@@ -1,7 +1,7 @@
 <?php
 App::uses('AppController', 'Controller');
 class TempController extends AppController {
-    public $uses = array('Category','Question','Language','Slide','SubCategory','Product','ProductModifier','Modifier','Option','SubOption','ModiferOption','ProductIncludedModifier','Store','OptionSuboption','Orderlog','EmailTemplate','Couponlog');
+    public $uses = array('Category','Question','Language','Slide','SubCategory','Product','ProductModifier','Modifier','Option','SubOption','ModiferOption','ProductIncludedModifier','Store','OptionSuboption','Orderlog','EmailTemplate','Couponlog','Deal');
     public $components=array('Core','Email');
 
     function beforeFilter(){
@@ -197,7 +197,7 @@ class TempController extends AppController {
 	
 	public function get_all_categories_data($storeId = 1, $menuCountry = 'UAE'){
 		
-		//Configure::write('debug', 2);
+		Configure::write('debug', 2);
         $this->layout = FALSE;
         $this->autoRender = FALSE;
 		$this->Category->recursive = 2;
@@ -216,8 +216,9 @@ class TempController extends AppController {
 								)
 						)));
 						
-		$this->Product->bindModel(array('belongsTo' => array(
-									'SubCategory' => array(
+		$this->Product->bindModel(array(
+									'belongsTo' => array(
+										'SubCategory' => array(
 											'ClassName' => 'SubCategory',
 											'foreignKey' => 'sub_category_id',
 											'conditions' => array('SubCategory.status' => 1),
@@ -225,19 +226,27 @@ class TempController extends AppController {
 													'SubCategory.id','SubCategory.lang_id','SubCategory.store_id','SubCategory.cat_id','SubCategory.name','SubCategory.slug','SubCategory.short_description','SubCategory.sort_order','SubCategory.image','SubCategory.status'
 												),
 											'order' => array('SubCategory.sort_order' => 'asc')	
+										)
+									),
+									'hasMany' => array(
+										'ProductModifier' => array(
+											'className' => 'ProductModifier',
+											'foreignKey' => 'product_id',
+											'fields' => array('ProductModifier.id')
+										)
 									)
-								)));
+								));
         
 		
 									
 		$data = $this->Category->find('all', array('conditions' => array(
-														'Category.status' => 1,
 														'Category.lang_id' => $storeId)
 												));
 		
 		//echo '<pre>'; print_r($data); die;
 		//$plu_json = $this->curlGetRequest('https://nkdpizza.com/beta/pos/index.php/menu/'.$menuCountry);
-		$plu_json = $this->curlGetRequest('https://nkdpizza.com/beta/pos/index.php/menu/UAE');
+		
+		$plu_json = $this->curlGetRequest(APIURL.'/index.php/menu/UAE');
 		$plu_json = json_decode($plu_json, true);
 		$plu_json = $plu_json['item'];
 		$resp = array();
@@ -246,96 +255,115 @@ class TempController extends AppController {
 		if(!empty($data)){
 			$i = 0;
 			foreach($data as $dat) {
-				
-				if(!in_array($dat['Category']['name'], $all_categories)) {
-					$cats[$i]['id'] = $dat['Category']['id'];
-					$cats[$i]['name'] = $dat['Category']['name'];
-					$cats[$i]['subCats'] = array();
-					$cats[$i]['products'] = array();
-					$cats[$i]['subCatsName'] = array();
-					$all_categories[] = $dat['Category']['name'];
-				}
-				
-				
-				if(!empty($dat['Product'])) {
-					$j = 0; $count = array();
-					foreach($dat['Product'] as $prod) {
-						
-						$prod['is_price_mapped'] = 0;
-						
-						//map price of product using plu code
-						if(!empty($plu_json)) {
-							foreach($plu_json as $pluData) {
-								//echo '<pre>'; print_r($pluData); die;
-								foreach($pluData as $pdat) {
-									//echo '<pre>'; print_r($pdat); 
-									if($dat['Category']['name'] == 'Pizza') {
-										
-										if($prod['plu_code'] == 999999) {
-											$prod['is_price_mapped'] = 1;
-											$prod['price'] = $prod['price_title'];	
-										}else{
+				if ($dat['Category']['slug'] != 'meal-deals') {
+					if(!in_array($dat['Category']['name'], $all_categories)) {
+						$cats[$i]['id'] = $dat['Category']['id'];
+						$cats[$i]['name'] = $dat['Category']['name'];
+						$cats[$i]['subCats'] = array();
+						$cats[$i]['products'] = array();
+						$cats[$i]['subCatsName'] = array();
+						$all_categories[] = $dat['Category']['name'];
+					}
+					
+					
+					if(!empty($dat['Product'])) {
+						$j = 0; $count = array();
+						foreach($dat['Product'] as $prod) {
+							
+							$prod['is_price_mapped'] = 0;
+							$prod['mod_count'] = count($prod['ProductModifier']);
+							unset($prod['ProductModifier']);
+							
+							//map price of product using plu code
+							if(!empty($plu_json)) {
+								foreach($plu_json as $pluData) {
+									//echo '<pre>'; print_r($pluData); die;
+									foreach($pluData as $pdat) {
+										//echo '<pre>'; print_r($pdat); 
+										if($dat['Category']['id'] == '1') {
 											
-											if(is_array($pdat)) {
-												foreach($pdat as $pz) {
-													if(isset($pz['PLU'])) {
-														if($prod['plu_code'] == $pz['PLU']) {
-															$prod['is_price_mapped'] = 1;
-															$prod['price'] = array(
-																'small' => $pz['PriceSm'],
-																'medium' => $pz['PriceMed'],
-																'large' => $pz['PriceLg']
-															);
-														}	
+											if($prod['plu_code'] == 999999) {
+												$prod['is_price_mapped'] = 1;
+												$prod['price'] = $prod['price_title'];	
+											}else{
+												
+												if(is_array($pdat)) {
+													foreach($pdat as $pz) {
+														if(isset($pz['PLU'])) {
+															if($prod['plu_code'] == $pz['PLU']) {
+																$prod['is_price_mapped'] = 1;
+																$prod['price'] = array(
+																	'small' => $pz['PriceSm'],
+																	'medium' => $pz['PriceMed'],
+																	'large' => $pz['PriceLg']
+																);
+															}	
+														}
 													}
 												}
+												
 											}
+											//echo '<pre>'; print_r($prod); die;
 											
-										}
-										//echo '<pre>'; print_r($prod); die;
-										
-									}else{
-										if(isset($pdat['PLU'])) {
-											if($prod['plu_code'] == $pdat['PLU']) {
-												$prod['is_price_mapped'] = 1;
-												$prod['price'] = $pdat['Price']. ' DHS';
-											}	
-										}
-									}									
-								}								
+										}else{
+											if(isset($pdat['PLU'])) {
+												if($prod['plu_code'] == $pdat['PLU']) {
+													$prod['is_price_mapped'] = 1;
+													$prod['price'] = $pdat['Price']. ' DHS';
+												}	
+											}
+										}									
+									}								
+								}
 							}
+							
+							//echo '<pre>'; print_r($prod); die;
+							if(!empty($prod['sub_category_id'])){
+								
+								if(!in_array($prod['SubCategory']['name'], $cats[$i]['subCatsName'])) {
+									$cats[$i]['subCatsName'][] = $prod['SubCategory']['name'];
+									$cats[$i]['subCatsPrice'][] = $prod['SubCategory']['short_description'];
+								}
+								
+								
+								if(!isset($count[$prod['SubCategory']['name']])) {
+									$count[$prod['SubCategory']['name']] = 0;
+								}
+								
+								$sName = $prod['SubCategory'];
+								unset($prod['SubCategory']);
+								unset($prod['created']);
+								unset($prod['modified']);
+								
+								$cats[$i]['subCats'][$sName['name']][$count[$sName['name']]]['name'] = $sName['name'];
+								$cats[$i]['subCats'][$sName['name']][$count[$sName['name']]]['products'][] = $prod;
+								
+								$count[$sName['name']] +=1;
+							}else{
+								$cats[$i]['products'][] = $prod;
+							}
+							
+							$j++;
 						}
-						
-						//echo '<pre>'; print_r($prod); die;
-						if(!empty($prod['sub_category_id'])){
-							
-							if(!in_array($prod['SubCategory']['name'], $cats[$i]['subCatsName'])) {
-								$cats[$i]['subCatsName'][] = $prod['SubCategory']['name'];
-							}
-							
-							
-							if(!isset($count[$prod['SubCategory']['name']])) {
-								$count[$prod['SubCategory']['name']] = 0;
-							}
-							
-							$sName = $prod['SubCategory'];
-							unset($prod['SubCategory']);
-							unset($prod['created']);
-							unset($prod['modified']);
-							
-							$cats[$i]['subCats'][$sName['name']][$count[$sName['name']]]['name'] = $sName['name'];
-							$cats[$i]['subCats'][$sName['name']][$count[$sName['name']]]['products'][] = $prod;
-							
-							$count[$sName['name']] +=1;
-						}else{
-							$cats[$i]['products'][] = $prod;
-						}
-						
-						$j++;
 					}
-				}
-				
-				$i++;			
+					
+							
+				} else {
+					$alldeals = $this->Deal->find('all', array('conditions' => array(
+						'Deal.status' => 1,
+						'Deal.store_id' => $storeId
+					)));
+
+					$cats[$i]['id'] = $dat['Category']['id'];
+					$cats[$i]['type'] = 'deal';
+					$cats[$i]['name'] = $dat['Category']['name'];
+					$cats[$i]['products'] = $alldeals; 
+					$cats[$i]['subCats'] = array();
+					$cats[$i]['subCatsName'] = array();
+					$all_categories[] = $dat['Category']['name'];
+				}	
+
+				$i++;
 			}
 		}
 			

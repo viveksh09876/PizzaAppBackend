@@ -14,7 +14,7 @@
 			<div class="box box-primary">
 			<?php if(!empty($Slides)){?>
 			<table class="table table-hover">
-				<tr><th><?php echo $this->Paginator->sort('slide_title');?></th><th><?php echo $this->Paginator->sort('coupon_code');?></th><!-- <th><?php // echo $this->Paginator->sort('slide_description');?></th> --><th><?php echo $this->Paginator->sort('image','Backround Image');?></th><th><?php echo $this->Paginator->sort('text_image', 'Forground Image');?></th><th><?php echo $this->Paginator->sort('status');?></th><th class="pull-right"><?php echo __('Actions');?></th></tr>
+				<tr><th><?php echo $this->Paginator->sort('slide_title');?></th><th><?php echo $this->Paginator->sort('coupon_code');?></th><!-- <th><?php // echo $this->Paginator->sort('slide_description');?></th> --><th><?php echo $this->Paginator->sort('image','Backround Image');?></th><th><?php echo $this->Paginator->sort('text_image', 'mobile Image');?></th><th><?php echo $this->Paginator->sort('status');?></th><th class="pull-right"><?php echo __('Actions');?></th></tr>
 				<?php
 				foreach ($Slides as $slide):
 				?>

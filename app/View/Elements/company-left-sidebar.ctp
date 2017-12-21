@@ -1,11 +1,17 @@
+<?php ?>
 <aside class="main-sidebar">
   <section class="sidebar">
     <ul class="sidebar-menu">
       <li class="header"><i class="fa fa-angle-double-right"></i> COMPANY ADMIN PANEL</li>
-      <li class="<?php echo (strtolower($this->params->controller)=='home')?'active':'';?> treeview">
-        <a href="<?=COMPANY_WEBROOT?>home">
+      <li class="<?php echo (strtolower($this->params->controller)=='reports')?'active':'';?> treeview">
+        <a href="<?=COMPANY_WEBROOT?>reports">
           <i class="fa fa-dashboard"></i> <span>Dashboard</span>
         </a>
+		<ul class="treeview-menu">
+		<li><a href="<?=COMPANY_WEBROOT?>reports"><i class="fa fa-angle-double-right"></i> Summary</a></li>
+         <li><a href="<?php echo $this->Html->url(array("controller" => "reports","action" => "users",25,$this->request->params['pass'][0],$this->request->params['pass'][1]));?>"><i class="fa fa-angle-double-right"></i> Show Registered Users</a></li>
+		<li><a href="<?php echo $this->Html->url(array("controller" => "reports","action" => "guestUsers",25,$this->request->params['pass'][0],$this->request->params['pass'][1]));?>"><i class="fa fa-angle-double-right"></i> Show Guest Users</a></li>
+        </ul>
       </li>
       <li class="treeview <?php echo (strtolower($this->params->controller)=='store')?'active':'';?>">
         <a href="#">
