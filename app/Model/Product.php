@@ -39,6 +39,14 @@ class Product extends AppModel {
 		}else{
 			$this->data['Product']['slug'] = $slug;
 		}
+       /// code for menu page dropdown 
+        if (isset($this->data['Product']['dd_group_id']) && !empty($this->data['Product']['dd_group_id'])) {
+            $dd_group_id = $this->data['Product']['dd_group_id'];
+            if (isset($this->data['Product']['added'][$dd_group_id])) {
+                $this->data['Product']['dd_default_selection'] = $this->data['Product']['added'][$dd_group_id]['default_option_id'][0];
+            }
+        }
+        /// end code drop down
 	}
 
 	public function isSlugExits($slug,$id){
