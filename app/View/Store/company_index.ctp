@@ -14,17 +14,18 @@
 			<div class="box box-primary">
 			<?php if(!empty($Stores)){?>
 			<table class="table table-hover">
-				<tr><th><?php echo $this->Paginator->sort('store_id', 'Store ID');?></th><th><?php echo $this->Paginator->sort('store_name');?></th><th><?php echo $this->Paginator->sort('store_address');?></th><th><?php echo $this->Paginator->sort('store_phone');?></th><th><?php echo $this->Paginator->sort('store_email');?></th><th><?php echo $this->Paginator->sort('status');?></th><th class="pull-right"><?php echo __('Actions');?></th></tr>
+				<tr><th><?php echo $this->Paginator->sort('store_id', 'Store ID');?></th><th><?php echo $this->Paginator->sort('store_name');?></th><th><?php echo $this->Paginator->sort('store_address');?></th><th><?php echo $this->Paginator->sort('store_phone');?></th><th><?php echo $this->Paginator->sort('store_email');?></th><th><?php echo $this->Paginator->sort('status');?></th><th><?php echo $this->Paginator->sort('store_status');?></th><th class="pull-right"><?php echo __('Actions');?></th></tr>
 				<?php
 				foreach ($Stores as $Store):
 				?>
 				<tr>
 					<td><?php echo $Store['Store']['store_id']; ?></td>
 					<td><?php echo $Store['Store']['store_name']; ?></td>
-					<td><?php echo $Store['Store']['store_address']; ?></td>
+					<td><?php echo wordwrap($Store['Store']['store_address'],20,"</br>"); ?></td>
 					<td><?php echo $Store['Store']['store_phone']; ?></td>
 					<td><?php echo $Store['Store']['store_email']; ?></td>
 					<td><?php echo getActiveInactive($Store['Store']['status']); ?></td>
+					<td><?php echo $Store['Store']['store_status']; ?></td>
 					<td class="pull-right">
 						<?php echo $this->Html->link(__('Edit', true), array('action' => 'edit', $Store['Store']['id']),array('class'=>'btn btn-default btn-sm btn-primary')); ?>
 						<?php echo $this->Html->link(__('view', true), array('action' => 'view', $Store['Store']['id']),array('class'=>'btn btn-primary btn-sm')); ?>

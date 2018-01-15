@@ -90,10 +90,11 @@
 <div class="form-group col-sm-6">
   <label class="col-sm-3 control-label" for="inputPassword3">Group</label>
   <div class="col-sm-9">
-  <?php 
-  echo $this->Form->input('Product.groupv', array('type' => 'checkbox','label'=>'V')); 
-  echo $this->Form->input('Product.grouph', array('type' => 'checkbox','label'=>'H')); 
-  echo $this->Form->input('Product.groupvh', array('type' => 'checkbox','label'=>'GF')); 
+  <?php
+  echo $this->Form->input('Product.groupp', array('type' => 'checkbox','label'=>'Protein')); 
+  echo $this->Form->input('Product.groupv', array('type' => 'checkbox','label'=>'Vegan')); 
+  echo $this->Form->input('Product.grouph', array('type' => 'checkbox','label'=>'Hot')); 
+  echo $this->Form->input('Product.groupvh', array('type' => 'checkbox','label'=>'Gluten Free')); 
   ?>
  </div>
 </div>
