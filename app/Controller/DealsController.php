@@ -8,7 +8,7 @@ class DealsController extends AppController {
     public $allowType=array(0=>'Select Order Type','delivery'=>'Delivery','pickup'=>'Pickup');
     
     function beforeFilter(){
-		Configure::write('debug', 2);
+		//Configure::write('debug', 2);
         parent::beforeFilter();
         $this->Auth->allow(array(''));
     }

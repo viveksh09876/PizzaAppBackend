@@ -3096,6 +3096,9 @@ class WebserviceController extends AppController {
                 $dealCategories[$i]['products'] = !empty($prod) ? $prod : null;
                 unset($dealCategories[$i + 1]);
             }
+            if(count($dealCategories[$i])==1){
+                unset($dealCategories[$i]);
+            }
         }
         $dealCategories = array_values($dealCategories);
         return $dealCategories;
