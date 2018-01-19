@@ -192,7 +192,7 @@ class ModifierController extends AppController{
 
             if ($this->Modifier->save($this->request->data)) {
                 $modifierId = $this->Modifier->id; 
-                if(!empty($options)){
+              /*  if(!empty($options)){
                     $data = array();
                     foreach ($options as $key => $option) {
                         $data[$key] = array(
@@ -202,6 +202,28 @@ class ModifierController extends AppController{
                     }
                     $this->ModifierOption->deleteAll(array('modifier_id'=>$modifierId));
                     $this->ModifierOption->saveALl($data);
+                }*/
+				$exitData=$this->ModifierOption->findAllData($modifierId);
+                if(!empty($options)){
+                    $data = array();
+                    foreach ($options as $key => $option) {
+						if(array_key_exists($option,$exitData)){
+							$optId[$option]=$option;
+						}else{
+							$data = array(
+								'modifier_id'=>$modifierId,
+								'option_id'=>$option
+							);
+							$this->ModifierOption->save($data);
+						}
+                    }
+					foreach($exitData as $key=>$exd){
+						if(empty($optId[$key])){
+							$delIds[]=$exd['ModifierOption']['id'];
+							$this->ModifierOption->delete($delIds);
+						}
+					}
+					
                 }
                 $this->Session->setFlash(__('The modifier group has been updated'),'default',array('class'=>'alert alert-success'));
                 $this->redirect(array('action' => 'index'));
@@ -249,7 +271,7 @@ class ModifierController extends AppController{
 
             if ($this->Modifier->save($this->request->data)) {
                 $modifierId = $this->Modifier->id; 
-                if(!empty($options)){
+                /*  if(!empty($options)){
                     $data = array();
                     foreach ($options as $key => $option) {
                         $data[$key] = array(
@@ -259,6 +281,28 @@ class ModifierController extends AppController{
                     }
                     $this->ModifierOption->deleteAll(array('modifier_id'=>$modifierId));
                     $this->ModifierOption->saveALl($data);
+                }*/
+				$exitData=$this->ModifierOption->findAllData($modifierId);
+                if(!empty($options)){
+                    $data = array();
+                    foreach ($options as $key => $option) {
+						if(array_key_exists($option,$exitData)){
+							$optId[$option]=$option;
+						}else{
+							$data = array(
+								'modifier_id'=>$modifierId,
+								'option_id'=>$option
+							);
+							$this->ModifierOption->save($data);
+						}
+                    }
+					foreach($exitData as $key=>$exd){
+						if(empty($optId[$key])){
+							$delIds[]=$exd['ModifierOption']['id'];
+							$this->ModifierOption->delete($delIds);
+						}
+					}
+					
                 }
                 $this->Session->setFlash(__('The modifier group has been updated'),'default',array('class'=>'alert alert-success'));
                 $this->redirect(array('action' => 'index'));

@@ -16,4 +16,14 @@ class ModifierOption extends AppModel {
 		)
 	);
 	
+	public function findAllData($modifierId){
+		$allData=$this->find('all',array('conditions'=>array('modifier_id'=>$modifierId)));
+		if(!empty($allData)){
+			foreach($allData as $data){
+				$datas[$data['ModifierOption']['option_id']]=$data;
+			}
+		}
+		return $datas;
+	}
+	
 }

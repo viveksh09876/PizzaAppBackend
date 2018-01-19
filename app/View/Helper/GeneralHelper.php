@@ -45,13 +45,40 @@ class GeneralHelper extends Helper {
 		
 		$Model = ClassRegistry::init('Store');
 		$data = $Model->findById($storeId['UserStore']['store_id'],array('Store.store_name'));
-		return $data['Store']['store_name'];
+		return (isset($data['Store']['store_name']))?$data['Store']['store_name']:'';
 	}
 
 	public function getCategoryNameById($categoryId){	
 		$Model = ClassRegistry::init('Category');
 		$data = $Model->findById($categoryId,array('Category.name'));
-		return $data['Category']['name'];
+		return isset($data['Category']['name'])?$data['Category']['name']:'';
+	}
+
+	public function getDealItem($itemId){	
+		$Model = ClassRegistry::init('DealItem');
+
+		$joins = array(
+            array(
+                'table'=>'products',
+                'alias'=>'Product',
+                'type'=>'LEFT',
+                'conditions'=>'Product.plu_code = DealItem.product_plu'
+            )  
+        );
+
+		$data = $Model->find('first',array('conditions'=>array('DealItem.id'=>$itemId),'joins'=>$joins));
+		return $data['Product']['title'];
+	}
+
+	public function getProductName($pluCode){
+		$Model = ClassRegistry::init('Product');
+		$data = $Model->find('first',array('conditions'=>array('Product.plu_code'=>$pluCode)));
+		return isset($data['Product']['title'])?$data['Product']['title']:null;
+	}
+
+	public function getProductList($catId){
+		$Model = ClassRegistry::init('Product');
+		return $products = $Model->find('list',array('fields'=>array('id','title'),'conditions'=>array('status'=>1,'category_id'=>$catId)));
 	}
 
 }

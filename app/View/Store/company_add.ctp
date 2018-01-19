@@ -128,13 +128,27 @@
          <?php echo $this->Form->input('notification_email', array('label'=>false,'class'=>'form-control')); ?>
        </div>
      </div>
-    
-    <div class="form-group col-sm-6">
-      <label class="col-sm-3 control-label">Link </label>
+     <div class="form-group col-sm-6">
+	 <label class="col-sm-3 control-label">Order Type </label>
+      <div class="col-sm-9">
+	  <label><input class="ord" type="radio" name="ord_type" <?php if(!$this->Form->value('link')){?> checked="checked"  <?php }?>  value="1"> On Side</label>
+	 <label> <input class="ord" type="radio" name="ord_type" <?php if($this->Form->value('link')){?> checked="checked"  <?php }?> value="2"> Out Side</label>
+	 <?php //echo $this->Form->value('link');?>
+	  </div>
+	 </div>
+    <div id="ord_link" class="form-group col-sm-6">
+      <label class="col-sm-3 control-label">Order Link </label>
       <div class="col-sm-9">
        <?php echo $this->Form->input('link', array('label'=>false,'class'=>'form-control','placeholder'=>'Http://www.demo.com','title'=>'Please enter valid url.')); ?>
      </div>
    </div>
+   <div class="form-group col-sm-6">
+      <label class="col-sm-3 control-label">Store Status </label>
+      <div class="col-sm-9">
+        <?php echo $this->Form->input('store_status', array('label'=>false,'options'=>array('Live'=>'Live','Upcoming'=>'Upcoming','Test'=>'Test'),'class'=>'form-control')); ?>
+     </div>
+   </div>
+   
    <div class="form-group col-sm-6">
       <label class="col-sm-3 control-label">Status</label>
       <div class="col-sm-9">
@@ -172,6 +186,22 @@ $(document).ready(function(){
     if(isEdit>0){
       renderTimeSlot(isEdit);
     }
+if($('.ord:checked').val()==1){
+		$('#StoreLink').val('');
+		$('#ord_link').hide();
+	}else{
+		$('#ord_link').show();
+	}
+	
+$('.ord').click(function(){
+	if($(this).val()==1){
+		$('#StoreLink').val('');
+		$('#ord_link').hide();
+	}else{
+		$('#ord_link').show();
+	}
+	
+})	
 });
 
 function renderTimeSlot(storeId){
